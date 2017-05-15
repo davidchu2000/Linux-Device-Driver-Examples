@@ -6,7 +6,6 @@
 #include <linux/uaccess.h>
 #include "exp_device_data.h"
 
-
 //
 //
 // Debugfs is typically mounted with a command like:
@@ -21,7 +20,7 @@
 //
 
 static struct dentry *exp_debugfs;
-#define EXP_DEBUGFS_BUF_SIZE	128
+#define EXP_DEBUGFS_BUF_SIZE	256
 static char exp_debugfs_buf[EXP_DEBUGFS_BUF_SIZE] = "Hello exp debugfs";
 
 static ssize_t exp_debug_read(struct file *file, char __user *user_buf, size_t count, loff_t *ppos)
