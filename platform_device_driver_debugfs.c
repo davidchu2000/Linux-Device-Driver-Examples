@@ -28,20 +28,27 @@ static ssize_t exp_debug_read(struct file *file, char __user *user_buf, size_t c
 	struct device *dev = (void *)file->private_data;
 	struct exp_device_platform_data *platform_data = (void *) dev_get_platdata(dev);
 	struct exp_driver_data *pdrvdata = (void *) dev_get_drvdata(dev);
-
 	int len;
-	
-	if(count > EXP_DEBUGFS_BUF_SIZE)
-			count = EXP_DEBUGFS_BUF_SIZE;
-	
+
+	// no more data
+	if(*ppos != 0)
+		return 0;
+		
 	// print platfrom device data and driver data
-	sprintf(exp_debugfs_buf,"poweron_gpio = %d\ntimer_msec = %d\nstate = %d\ndata1 =%d\ndata2=%d\n", 
+	sprintf(exp_debugfs_buf,"poweron_gpio=%d\ntimer_msec=%d\nstate=%d\ndata1=%d\ndata2=%d\n", 
 			platform_data->poweron_gpio,platform_data->timer_msec,platform_data->state,
 			pdrvdata->data1,pdrvdata->data2);
-		
-	len = copy_to_user(user_buf,exp_debugfs_buf,count);
-	
-	return (ssize_t)count;
+
+	len = strlen(exp_debugfs_buf);
+
+	if(len < count)
+	{
+		copy_to_user(user_buf,exp_debugfs_buf,len);
+		*ppos = *ppos + len;
+		return len;
+	}
+	else
+		return -ENOMEM;
 }
 
 static ssize_t exp_debug_write(struct file *file, const char __user *user_buf, size_t count, loff_t *ppos)
