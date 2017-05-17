@@ -15,12 +15,3 @@ struct exp_driver_data {
     int data1;
     int data2;
 };
-
-// Exp device IOCTL commands
-enum EXP_DEVICE_IOCTL_CMD
-{
-	EXP_IOCTL_CMD_GET = 0,
-	EXP_IOCTL_CMD_SET,
-	EXP_IOCTL_CMD_POWER_ON,
-	EXP_IOCTL_CMD_POWER_OFF
-};
