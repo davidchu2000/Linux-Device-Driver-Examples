@@ -9,6 +9,8 @@
 #include <linux/cdev.h>
 #include <linux/uaccess.h>
 #include "exp_device_data.h"
+#include "exp_device_ioctl.h"
+
 
 /*
 **	This file creates a charactor device node
@@ -47,21 +49,22 @@ static ssize_t exp_write(struct file *f,const char __user *buf,size_t len,loff_t
   return len;
 }
 
-static long exp_compat_ioctl(struct file *file,unsigned int cmd,unsigned long *arg)
+static long exp_compat_ioctl(struct file *file,unsigned int cmd,unsigned long arg)
 {
   struct exp_device_platform_data *platform_data = dev_get_platdata(&exp_platform_device->dev);
+  struct exp_driver_data *driver_data = platform_get_drvdata(&exp_platform_device->dev);
+  struct exp_ioctl_arg *exp_ioctl_arg = (struct exp_ioctl_arg *) arg;
 
-
-  if(!arg || !platform_data)
+  if(!platform_data)
   	return 0;
 
   switch(cmd)
   	{
-  		case EXP_IOCTL_CMD_GET:
-			*arg  = platform_data->timer_msec;
+  		case EXP_IOCTL_CMD_GET_TIMER:
+			exp_ioctl_arg->timer  = platform_data->timer_msec;
 			break;
-		case EXP_IOCTL_CMD_SET:
-			platform_data->timer_msec = *arg;
+		case EXP_IOCTL_CMD_SET_TIMER:
+			platform_data->timer_msec = exp_ioctl_arg->timer;
 			break;
 		case EXP_IOCTL_CMD_POWER_ON:
 			if(platform_data && platform_data->power_on)
@@ -71,6 +74,20 @@ static long exp_compat_ioctl(struct file *file,unsigned int cmd,unsigned long *a
 			if(platform_data && platform_data->power_off)
 					(* platform_data->power_off)(platform_data);
 			break;
+		case EXP_IOCTL_CMD_ENABLE:
+			if(platform_data && platform_data->enable)
+					(* platform_data->enable)(platform_data);
+			break;
+		case EXP_IOCTL_CMD_DISABLE:
+			if(platform_data && platform_data->disable)
+					(* platform_data->disable)(platform_data);
+			break;
+		case EXP_IOCTL_CMD_GET_DRVDATA:
+			if(driver_data)
+			{
+				exp_ioctl_arg->data1 = driver_data->data1;
+				exp_ioctl_arg->data2 = driver_data->data2;
+			}
 		default:
 			break;
   	}
@@ -92,7 +109,8 @@ static struct file_operations exp_fops =
   .release = exp_close,
   .read = exp_read,
   .write = exp_write,
-  .compat_ioctl = exp_compat_ioctl,
+ // .compat_ioctl = exp_compat_ioctl,
+  .unlocked_ioctl = exp_compat_ioctl,
 };
  
 int __init cdev_node_create(struct platform_device *pdev)
