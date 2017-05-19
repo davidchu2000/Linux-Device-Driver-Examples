@@ -11,12 +11,11 @@ enum EXP_DEVICE_IOCTL_CMD
 	EXP_CMD_POWER_OFF,
 	EXP_CMD_ENABLE,
 	EXP_CMD_DISABLE,
-	EXP_CMD_GET_DRVDATA
+	EXP_CMD_GET_PDRVDATA
 };
 
 struct exp_ioctl_arg
 {
-    int timer;
 	int data1;
 	int data2;
 };
@@ -27,4 +26,4 @@ struct exp_ioctl_arg
 #define EXP_IOCTL_CMD_POWER_OFF 	_IO('q', EXP_CMD_POWER_OFF)
 #define EXP_IOCTL_CMD_ENABLE 		_IO('q', EXP_CMD_ENABLE)
 #define EXP_IOCTL_CMD_DISABLE 		_IO('q', EXP_CMD_DISABLE)
-#define EXP_IOCTL_CMD_GET_DRVDATA 	_IOR('q', EXP_CMD_GET_DRVDATA, struct exp_ioctl_arg *)
+#define EXP_IOCTL_CMD_GET_PDRVDATA 	_IOR('q', EXP_CMD_GET_PDRVDATA, struct exp_ioctl_arg *)

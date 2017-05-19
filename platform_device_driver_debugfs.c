@@ -19,6 +19,10 @@
 //   to turn off device   : echo 0 > exp_debugfs
 //
 
+extern void vibrator_enable(void);
+extern void vibrator_disable(void);
+
+
 static struct dentry *exp_debugfs;
 #define EXP_DEBUGFS_BUF_SIZE	256
 static char exp_debugfs_buf[EXP_DEBUGFS_BUF_SIZE] = "Hello exp debugfs";
@@ -27,16 +31,15 @@ static ssize_t exp_debug_read(struct file *file, char __user *user_buf, size_t c
 {
 	struct device *dev = (void *)file->private_data;
 	struct exp_device_platform_data *platform_data = (void *) dev_get_platdata(dev);
-	struct exp_driver_data *pdrvdata = (void *) dev_get_drvdata(dev);
+	struct exp_device_driver_data *pdrvdata = (void *) dev_get_drvdata(dev);
 	int len;
 
-	// no more data
 	if(*ppos != 0)
 		return 0;
 		
 	// print platfrom device data and driver data
-	sprintf(exp_debugfs_buf,"poweron_gpio=%d\ntimer_msec=%d\nstate=%d\ndata1=%d\ndata2=%d\n", 
-			platform_data->poweron_gpio,platform_data->timer_msec,platform_data->state,
+	sprintf(exp_debugfs_buf,"poweron_gpio=%d\nstate=%d\ndata1=%d\ndata2=%d\n", 
+			platform_data->poweron_gpio,platform_data->state,
 			pdrvdata->data1,pdrvdata->data2);
 
 	len = strlen(exp_debugfs_buf);
@@ -55,7 +58,7 @@ static ssize_t exp_debug_write(struct file *file, const char __user *user_buf, s
 {
 	struct device *dev = (void *)file->private_data;
 	struct exp_device_platform_data *platform_data = (void *) dev_get_platdata(dev);
-	struct exp_driver_data *pdrvdata = dev_get_drvdata(dev);
+	struct exp_device_driver_data *pdrvdata = dev_get_drvdata(dev);
 	int len;
 	
 	if(count > EXP_DEBUGFS_BUF_SIZE)
@@ -64,11 +67,11 @@ static ssize_t exp_debug_write(struct file *file, const char __user *user_buf, s
 	len = copy_from_user(exp_debugfs_buf,user_buf,count);
 
 	if(exp_debugfs_buf[0] == '1')
-		(* platform_data->enable)(platform_data);
+		vibrator_enable();
 
 	if(exp_debugfs_buf[0] == '0')
-		(* platform_data->disable)(platform_data);
-	
+		vibrator_disable();
+
 	return (ssize_t)count;
 }
 
@@ -90,6 +93,8 @@ int exp_debugfs_create(struct platform_device *pdev)
 	
 	return ret;
 }
+
+
 EXPORT_SYMBOL(exp_debugfs_create);
 
 int exp_debugfs_remove(struct platform_device *pdev)
